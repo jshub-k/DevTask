@@ -54,6 +54,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
       <div {...listeners} className="w-full h-full">
         <h3 className="font-bold text-lg mb-1 pr-10">{task.title}</h3>
         <p className="text-gray-400 text-sm">{task.description}</p>
+        {task.notes && (
+          <div className="mt-2 pt-2 border-t border-gray-700">
+            <p className="text-gray-500 text-xs italic whitespace-pre-wrap">{task.notes}</p>
+          </div>
+        )}
       </div>
     </div>
   );

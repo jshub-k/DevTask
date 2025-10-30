@@ -18,4 +18,5 @@ export interface Task {
   priority: Priority;
   status: Status;
   order: number;
+  notes?: string;
 }

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { User } from 'firebase/auth';
 import { auth } from './services/firebase';
 import LoginPage from './components/LoginPage';
 import KanbanBoard from './components/KanbanBoard';
@@ -11,7 +11,8 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    // FIX: Use v8 compat API for onAuthStateChanged.
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });

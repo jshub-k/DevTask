@@ -52,7 +52,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
     const lowercasedQuery = searchQuery.toLowerCase();
     return tasks.filter(task =>
       task.title.toLowerCase().includes(lowercasedQuery) ||
-      task.description.toLowerCase().includes(lowercasedQuery)
+      task.description.toLowerCase().includes(lowercasedQuery) ||
+      (task.notes && task.notes.toLowerCase().includes(lowercasedQuery))
     );
   }, [tasks, searchQuery]);
 

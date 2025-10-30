@@ -14,6 +14,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>(Priority.Medium);
   const [status, setStatus] = useState<Status>(Status.ToDo);
+  const [notes, setNotes] = useState('');
   
   useEffect(() => {
     if (task) {
@@ -21,18 +22,20 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
       setDescription(task.description);
       setPriority(task.priority);
       setStatus(task.status);
+      setNotes(task.notes || '');
     } else {
       setTitle('');
       setDescription('');
       setPriority(Priority.Medium);
       setStatus(Status.ToDo);
+      setNotes('');
     }
   }, [task, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
-    onSave({ title, description, priority, status });
+    onSave({ title, description, priority, status, notes });
   };
   
   if (!isOpen) return null;
@@ -62,6 +65,16 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task }) 
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-300 mb-1">Notes</label>
+            <textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               rows={3}
               className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
