@@ -1,0 +1,5 @@
+{
+  "name": "Dev Queue Kanban",
+  "description": "A clean and minimal Kanban board for managing developer tasks, with Firebase for authentication and real-time data storage. Features include drag-and-drop functionality, task creation/editing, and priority tagging.",
+  "requestFramePermissions": []
+}
