@@ -6,7 +6,7 @@ import { db, serverTimestamp } from '../services/firebase';
 import { Task, Status, Priority } from '../types';
 import KanbanColumn from './KanbanColumn';
 import TaskModal from './TaskModal';
-import Header from './Header';
+import KanbanHeader from './KanbanHeader';
 import Spinner from './Spinner';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -167,8 +167,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-brand-primary text-white overflow-x-hidden">
-      <Header
+    <>
+      <KanbanHeader
         onAddTask={openAddTaskModal}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -216,7 +216,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
           task={editingTask}
         />
       )}
-    </div>
+    </>
   );
 };
 

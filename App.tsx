@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
 import { auth } from './services/firebase';
 import LoginPage from './components/LoginPage';
-import KanbanBoard from './components/KanbanBoard';
+import Dashboard from './components/Dashboard';
 import Spinner from './components/Spinner';
 
 const App: React.FC = () => {
@@ -28,7 +28,7 @@ const App: React.FC = () => {
     );
   }
 
-  return user ? <KanbanBoard user={user} /> : <LoginPage />;
+  return user ? <Dashboard user={user} /> : <LoginPage />;
 };
 
 export default App;
