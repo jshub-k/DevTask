@@ -1,10 +1,5 @@
 
 import React, { useState } from 'react';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
 
 const LoginPage: React.FC = () => {
@@ -14,15 +9,16 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // FIX: Updated Firebase auth calls to match the v8 compat API.
   const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        await auth.signInWithEmailAndPassword(email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await auth.createUserWithEmailAndPassword(email, password);
       }
     } catch (err: any) {
       setError(err.message);
@@ -31,11 +27,12 @@ const LoginPage: React.FC = () => {
     }
   };
   
+  // FIX: Updated Firebase auth calls to match the v8 compat API.
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setError('');
     try {
-        await signInWithPopup(auth, googleProvider);
+        await auth.signInWithPopup(googleProvider);
     } catch (err: any) {
         setError(err.message);
     } finally {

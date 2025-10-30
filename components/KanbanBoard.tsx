@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { User } from 'firebase/auth';
-import { collection, onSnapshot, query, orderBy, doc, writeBatch, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+// FIX: Updated Firestore imports and usage to match the v8 compat API.
+import { db, serverTimestamp } from '../services/firebase';
 import { Task, Status, Priority } from '../types';
 import KanbanColumn from './KanbanColumn';
 import TaskModal from './TaskModal';
@@ -20,14 +20,17 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    const tasksCollection = collection(db, 'users', user.uid, 'tasks');
-    const q = query(tasksCollection, orderBy('order', 'asc'));
+    // FIX: Use v8 collection and query syntax.
+    const tasksCollection = db.collection('users').doc(user.uid).collection('tasks');
+    const q = tasksCollection.orderBy('order', 'asc');
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    // FIX: Use v8 onSnapshot syntax.
+    const unsubscribe = q.onSnapshot((snapshot) => {
       const fetchedTasks = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -42,11 +45,22 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
     return () => unsubscribe();
   }, [user]);
 
+  const filteredTasks = useMemo(() => {
+    if (!searchQuery) {
+      return tasks;
+    }
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return tasks.filter(task =>
+      task.title.toLowerCase().includes(lowercasedQuery) ||
+      task.description.toLowerCase().includes(lowercasedQuery)
+    );
+  }, [tasks, searchQuery]);
+
   const columns = useMemo(() => ({
-    [Status.ToDo]: tasks.filter(task => task.status === Status.ToDo),
-    [Status.InProgress]: tasks.filter(task => task.status === Status.InProgress),
-    [Status.Done]: tasks.filter(task => task.status === Status.Done),
-  }), [tasks]);
+    [Status.ToDo]: filteredTasks.filter(task => task.status === Status.ToDo),
+    [Status.InProgress]: filteredTasks.filter(task => task.status === Status.InProgress),
+    [Status.Done]: filteredTasks.filter(task => task.status === Status.Done),
+  }), [filteredTasks]);
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -84,8 +98,9 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
 
     // Persist changes to Firestore
     try {
-        const batch = writeBatch(db);
-        const tasksRef = collection(db, 'users', user.uid, 'tasks');
+        // FIX: Use v8 batch and doc syntax.
+        const batch = db.batch();
+        const tasksRef = db.collection('users').doc(user.uid).collection('tasks');
         
         // Update order and status for all tasks
         // This is a simple approach; for large boards, more targeted updates would be better.
@@ -96,7 +111,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
         ];
 
         tasksToUpdate.forEach((task, index) => {
-            const taskRef = doc(tasksRef, task.id);
+            const taskRef = tasksRef.doc(task.id);
             // We need to re-calculate the final ordering based on the new structure
             const finalStatus = newTasks.find(t => t.id === task.id)?.status;
             batch.update(taskRef, { status: finalStatus, order: index });
@@ -123,15 +138,19 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
 
   const handleSaveTask = async (taskData: Omit<Task, 'id' | 'order'>) => {
     if (!user) return;
-    const tasksCollection = collection(db, 'users', user.uid, 'tasks');
+    const tasksCollection = db.collection('users').doc(user.uid).collection('tasks');
     
     if (editingTask) { // Update existing task
-      const taskRef = doc(tasksCollection, editingTask.id);
-      await writeBatch(db).update(taskRef, taskData).commit();
+      // FIX: Use v8 doc and batch syntax.
+      const taskRef = tasksCollection.doc(editingTask.id);
+      const batch = db.batch();
+      batch.update(taskRef, taskData);
+      await batch.commit();
     } else { // Create new task
       const tasksInColumn = columns[taskData.status];
       const newOrder = tasksInColumn.length;
-      await addDoc(tasksCollection, { ...taskData, order: newOrder, createdAt: serverTimestamp() });
+      // FIX: Use v8 add syntax and call serverTimestamp as a function.
+      await tasksCollection.add({ ...taskData, order: newOrder, createdAt: serverTimestamp() });
     }
     setIsModalOpen(false);
     setEditingTask(null);
@@ -140,14 +159,19 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ user }) => {
   const handleDeleteTask = async (taskId: string) => {
       if (!user) return;
       if (window.confirm("Are you sure you want to delete this task?")) {
-        const taskRef = doc(db, 'users', user.uid, 'tasks', taskId);
-        await deleteDoc(taskRef);
+        // FIX: Use v8 doc and delete syntax.
+        const taskRef = db.collection('users').doc(user.uid).collection('tasks').doc(taskId);
+        await taskRef.delete();
       }
   };
 
   return (
     <div className="flex flex-col h-screen bg-brand-primary text-white overflow-x-hidden">
-      <Header onAddTask={openAddTaskModal} />
+      <Header
+        onAddTask={openAddTaskModal}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
       {loading ? (
         <div className="flex-grow flex items-center justify-center">
             <Spinner />
